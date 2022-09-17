@@ -8,6 +8,18 @@ string ltrim(const string &);
 string rtrim(const string &);
 vector<string> split(const string &);
 
+struct Wall
+{
+    int* crackArr, currHeight;
+
+    Wall(int length) : crackArr(new int[length]), currHeight(0) {}
+
+    ~Wall()
+    {
+        delete [] crackArr;
+    }
+};
+
 template <class Data>
 struct QueueNode
 {
@@ -27,7 +39,10 @@ private:
 public:
     Queue() : front(nullptr), end(nullptr), size(0) {}
 
-
+    /**
+     * Enqueues the given item to the end of queue
+     * @param newItem is the item that is going to be enqueued
+     * */
     void enqueue(const Data &newItem)
     {
         size++;
@@ -44,6 +59,10 @@ public:
         }
     }
 
+    /**
+     * Dequeues the element which was enqueued first.
+     * @param deletedItem The removed item
+     * */
     void dequeue(Data &deletedItem)
     {
         if(size != 0)
@@ -65,6 +84,9 @@ public:
         }
     }
 
+    /**
+     * @return Number of elements in the queue
+     * */
     int qSize() const
     {
         return size;
