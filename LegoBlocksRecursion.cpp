@@ -1,5 +1,6 @@
 #include <bits/stdc++.h>
 #include <string>
+#include <iostream>
 
 using namespace std;
 
@@ -95,6 +96,8 @@ int legoBlocks(int n, int m)
         }
         findHeight(wallArr, crackNum, n, 1, currNum, wallArr[index], index);
     }
+
+    cout << currNum << endl;
 
     return currNum;
 }
