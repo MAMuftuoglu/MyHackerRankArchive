@@ -10,13 +10,14 @@ vector<string> split(const string &);
 
 struct Wall
 {
-    int* crackArr, currHeight;
+    int *crackArr, currHeight;
 
+    Wall() : crackArr(nullptr), currHeight(0) {}
     Wall(int length) : crackArr(new int[length]), currHeight(0) {}
 
     ~Wall()
     {
-        delete [] crackArr;
+        delete[] crackArr;
     }
 };
 
@@ -26,7 +27,7 @@ struct QueueNode
     Data item;
     QueueNode *next;
 
-    QueueNode(const Data& newItem) : item(newItem), next(nullptr) {}
+    QueueNode(const Data &newItem) : item(newItem), next(nullptr) {}
 };
 
 template <class Data>
@@ -47,7 +48,7 @@ public:
     {
         size++;
 
-        if(end == nullptr)
+        if (end == nullptr)
         {
             end = new QueueNode<Data>(newItem);
             front = end;
@@ -65,11 +66,11 @@ public:
      * */
     void dequeue(Data &deletedItem)
     {
-        if(size != 0)
+        if (size != 0)
         {
             deletedItem = front->item;
             size--;
-            if(front == end)
+            if (front == end)
             {
                 delete front;
                 front = nullptr;
@@ -77,7 +78,7 @@ public:
             }
             else
             {
-                QueueNode<Data>* temp = front;
+                QueueNode<Data> *temp = front;
                 front = front->next;
                 delete temp;
             }
@@ -91,6 +92,24 @@ public:
     {
         return size;
     }
+
+    /**
+     * Turns queue to an array
+     * @return Array of a queue
+     * */
+    Data *toArray() const
+    {
+        Data *arr = new Data[size];
+        int index = 0;
+
+        for (QueueNode<Data> *temp = front; temp != nullptr; temp = temp->next)
+        {
+            arr[index] = temp->item;
+            index++;
+        }
+
+        return arr;
+    }
 };
 
 /**
@@ -99,14 +118,14 @@ public:
  * @param searchChar Seacrhed char in given string
  * @return index of char, -1 if cannot find
  * */
-int rfind(const string& str, const char searchChar)
+int rfind(const string &str, const char searchChar)
 {
     int returnIndex = -1, index = str.length() - 1;
     bool searching = true;
 
-    while(searching)
+    while (searching)
     {
-        if(index == -1 || str.at(index) == searchChar)
+        if (index == -1 || str.at(index) == searchChar)
         {
             returnIndex = index;
             searching = false;
@@ -122,51 +141,74 @@ int legoBlocks(int n, int m)
     Queue<string> possibleWalls;
     string wall = "0";
     possibleWalls.enqueue(wall);
-    int noDifferenceCount = 0;
+    int reachedLimit = 0;
     bool carrryOn = true;
 
-    while(carrryOn)
+    while (carrryOn)
     {
         possibleWalls.dequeue(wall);
 
-        if(wall.length() == 1 || stoi(wall.substr(rfind(wall, ',') + 1), nullptr) != m)
+        if (wall.length() == 1 || stoi(wall.substr(rfind(wall, ',') + 1), nullptr) != m)
         {
-            noDifferenceCount = 0;
-
             int currLength = stoi(wall.substr(rfind(wall, ',') + 1), nullptr);
             string newWall;
 
-            if(currLength + 1 <= m)
+            if (currLength + 1 <= m)
             {
                 newWall = wall + "," + to_string(currLength + 1);
                 possibleWalls.enqueue(newWall);
-            }
-            if(currLength + 2 <= m)
-            {
-                newWall = wall + "," + to_string(currLength + 2);
-                possibleWalls.enqueue(newWall);
-            }
-            if(currLength + 3 <= m)
-            {
-                newWall = wall + "," + to_string(currLength + 3);
-                possibleWalls.enqueue(newWall);
-            }
-            if(currLength + 4 <= m)
-            {
-                newWall = wall + "," + to_string(currLength + 4);
-                possibleWalls.enqueue(newWall);
+
+                if (currLength + 1 == m)
+                    reachedLimit++;
+
+                if (currLength + 2 <= m)
+                {
+                    newWall = wall + "," + to_string(currLength + 2);
+                    possibleWalls.enqueue(newWall);
+
+                    if (currLength + 2 == m)
+                        reachedLimit++;
+
+                    if (currLength + 3 <= m)
+                    {
+                        newWall = wall + "," + to_string(currLength + 3);
+                        possibleWalls.enqueue(newWall);
+
+                        if (currLength + 3 == m)
+                            reachedLimit++;
+
+                        if (currLength + 4 <= m)
+                        {
+                            newWall = wall + "," + to_string(currLength + 4);
+                            possibleWalls.enqueue(newWall);
+
+                            if (currLength + 4 == m)
+                                reachedLimit++;
+                        }
+                    }
+                }
             }
         }
         else
         {
-            noDifferenceCount++;
             possibleWalls.enqueue(wall);
         }
 
-        if(noDifferenceCount == possibleWalls.qSize()) carrryOn = false;
+        if (reachedLimit == possibleWalls.qSize())
+            carrryOn = false;
     }
 
-    return 0;
+    Queue<Wall> allWalls;
+    carrryOn = true;
+    reachedLimit = 0;
+
+    auto wallArr = possibleWalls.toArray();
+
+    // while (carrryOn)
+    // {
+    // }
+
+    return allWalls.qSize();
 }
 
 int main()
