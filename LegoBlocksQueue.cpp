@@ -8,19 +8,6 @@ string ltrim(const string &);
 string rtrim(const string &);
 vector<string> split(const string &);
 
-struct Wall
-{
-    int *crackArr, currHeight;
-
-    Wall() : crackArr(nullptr), currHeight(0) {}
-    Wall(int length) : crackArr(new int[length]), currHeight(0) {}
-
-    ~Wall()
-    {
-        delete[] crackArr;
-    }
-};
-
 template <class Data>
 struct QueueNode
 {
@@ -39,6 +26,14 @@ private:
 
 public:
     Queue() : front(nullptr), end(nullptr), size(0) {}
+    ~Queue()
+    {
+        while(front != nullptr)
+        {
+            Data temp;
+            this->dequeue(temp);
+        }
+    }
 
     /**
      * Enqueues the given item to the end of queue
@@ -136,6 +131,35 @@ int rfind(const string &str, const char searchChar)
     return returnIndex;
 }
 
+struct Wall
+{
+    vector<int> crackNums;
+    int currHeight;
+
+    void updateCrack(string extendStr)
+    {
+        auto foundIndex = extendStr.find(",");
+
+        while (foundIndex != string::npos)
+        {
+            crackNums[stoi(extendStr.substr(0, foundIndex)) - 1]++;
+            extendStr = extendStr.substr(foundIndex + 1);
+            foundIndex = extendStr.find(",");
+        }
+
+        crackNums[stoi(extendStr) - 1]++;
+    }
+
+    Wall() : crackNums(vector<int>(0)), currHeight(0) {}
+
+    Wall(string base, int m)
+    {
+        currHeight = 1;
+        crackNums = vector<int>(m, 0);
+        updateCrack(base);
+    }
+};
+
 int legoBlocks(int n, int m)
 {
     Queue<string> possibleWalls;
@@ -198,17 +222,61 @@ int legoBlocks(int n, int m)
             carrryOn = false;
     }
 
+    string *wallArr = possibleWalls.toArray();
     Queue<Wall> allWalls;
+
+    for (int index = 0; index < possibleWalls.qSize(); index++)
+    {
+        Wall baseWall(wallArr[index].substr(2), m);
+        allWalls.enqueue(baseWall);
+    }
+
     carrryOn = true;
     reachedLimit = 0;
 
-    auto wallArr = possibleWalls.toArray();
+    Wall base;
 
-    // while (carrryOn)
-    // {
-    // }
+    while (carrryOn)
+    {
+        allWalls.dequeue(base);
 
-    return allWalls.qSize();
+        if (base.currHeight != n)
+        {
+
+            for (int index = 0; index < possibleWalls.qSize(); index++)
+            {
+                Wall newOne = base;
+                newOne.updateCrack(wallArr[index].substr(2));
+                newOne.currHeight++;
+
+                if (newOne.currHeight == n)
+                {
+                    bool viable = true;
+                    for (int crackIndex = 0; viable && crackIndex < newOne.crackNums.size() - 1; crackIndex++)
+                    {
+                        if (newOne.crackNums[crackIndex] == n)
+                            viable = false;
+                    }
+
+                    if (viable)
+                    {
+                        allWalls.enqueue(newOne);
+                        reachedLimit++;
+                    }
+                }
+                else
+                    allWalls.enqueue(newOne);
+            }
+        }
+        else
+            allWalls.enqueue(base);
+
+        if (reachedLimit == allWalls.qSize())
+            carrryOn = false;
+    }
+
+    cout << reachedLimit << endl;
+    return reachedLimit;
 }
 
 int main()
