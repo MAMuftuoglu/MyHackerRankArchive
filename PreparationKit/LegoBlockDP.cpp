@@ -17,6 +17,18 @@ unsigned long multiplyMod(unsigned long a, unsigned long b, unsigned long mod) {
     return result;
 }
 
+unsigned long powMod(unsigned long a, unsigned long b, unsigned long mod) {
+    unsigned long result = 1;
+
+    while(b > 0) {
+        if(b & 1) result = multiplyMod(result, a, mod);
+        a = multiplyMod(a, a, mod);
+        b >>= 1;
+    }
+
+    return result;
+}
+
 int legoBlocks(int n, int m) {
     unsigned long * rowArr = new unsigned long[m];
     rowArr[0] = 1;
