@@ -38,7 +38,7 @@ int deleteMin(std::vector<int> &array, int &size)
 }
 
 void insert(std::vector<int> &array, int item, int &size) {
-    int hole = ++size;
+    int hole = size++;
 
     for(; hole > 1 && item < array[hole / 2]; hole /= 2) {
         array[hole] = array[hole / 2];
@@ -52,15 +52,15 @@ int cookies(int k, std::vector<int> A)
     int result = 0;
 
     int index, size = A.size();
-    for (index = A.size() / 2; index >= 0; index--)
+    for (index = (size - 1) / 2; index >= 0; index--)
     {
-        percolateDown(A, index, A.size());
+        percolateDown(A, index, size);
     }
 
     while (A[0] < k && size > 1)
     {
         int combine1 = deleteMin(A, size), combine2 = deleteMin(A, size);
-        insert(A, combine1 + combine2, size);
+        insert(A, combine1 + 2 * combine2, size);
         result++;
     }
 
