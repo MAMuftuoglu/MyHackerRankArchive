@@ -11,49 +11,78 @@
  *  4. INTEGER s
  */
 
+class graph {
+private:
+    int numVertices;
+    std::list<int>* adjacencyLists;
+    int* visitedArr;
+
+public:
+    graph(std::vector<std::vector<int>>, int);
+    ~graph();
+    void addEdge(std::vector<int>);
+    std::vector<int> BFS(int);
+};
+
+graph::graph(std::vector<std::vector<int>> edges, int vertices) {
+    adjacencyLists = new std::list<int>[vertices + 1];
+    numVertices = vertices;
+    visitedArr = nullptr;
+    for(std::vector<int> edge : edges)
+        addEdge(edge);
+}
+
+graph::~graph() {
+    delete [] adjacencyLists;
+}
+
+void graph::addEdge(std::vector<int> edge) {
+    adjacencyLists[edge[0]].push_back(edge[1]);
+    adjacencyLists[edge[1]].push_back(edge[0]);
+}
+
+std::vector<int> graph::BFS(int s) {
+    visitedArr = new int[numVertices + 1];
+    for(int i = 0; i <= numVertices; i++)
+        visitedArr[i] = -1;
+    
+    std::queue<int> vertexQ;
+
+    visitedArr[s] = 0;
+    vertexQ.push(s);
+
+    std::list<int>::iterator iter;
+
+    while(!vertexQ.empty()) {
+        int currVertex = vertexQ.front();
+        vertexQ.pop();
+
+        for(iter = adjacencyLists[currVertex].begin(); iter != adjacencyLists[currVertex].end(); iter++) {
+            int adjVertex = *iter;
+            if(visitedArr[adjVertex] == -1) {
+                visitedArr[adjVertex] = visitedArr[currVertex] + 6;
+                vertexQ.push(adjVertex);
+            }
+        }
+    }
+
+    std::vector<int> resultArr;
+
+    for(int index = 1; index <= numVertices; index++) {
+        if(visitedArr[index] != 0)
+            resultArr.push_back(visitedArr[index]);
+    }
+
+    delete [] visitedArr;
+    visitedArr = nullptr;
+
+    return resultArr;
+}
+
 std::vector<int> bfs(int n, int m, std::vector<std::vector<int>> edges, int s)
 {
-    std::queue<int> nodes;
-    nodes.push(s);
-    std::vector<int> shortestReachAll(n, 0);
-    std::vector<bool> visited(n, false);
-
-    while (!nodes.empty())
-    {
-        int currNode = nodes.front();
-        nodes.pop();
-
-        if (!visited[currNode - 1])
-        {
-            for (std::vector<int> edge : edges)
-            {
-                if (edge[0] == currNode && !visited[edge[1] - 1])
-                {
-                    nodes.push(edge[1]);
-                    shortestReachAll[edge[1] - 1] = shortestReachAll[edge[0] - 1] + 6;
-                }
-                else if (edge[1] == currNode && !visited[edge[0] - 1])
-                {
-                    nodes.push(edge[0]);
-                    shortestReachAll[edge[0] - 1] = shortestReachAll[edge[1] - 1] + 6;
-                }
-            }
-            visited[currNode - 1] = true;
-        }
-    }
-
-    std::vector<int> shortestReach;
-    for (int index = 0; index < shortestReachAll.size(); index++)
-    {
-        if (index != s - 1)
-        {
-            int value;
-            value = (shortestReachAll[index] != 0) ? shortestReachAll[index] : -1;
-            shortestReach.push_back(value);
-        }
-    }
-
-    return shortestReach;
+   graph givenGraph(edges, n);
+   return givenGraph.BFS(s);
 }
 
 int main()
