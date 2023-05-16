@@ -11,133 +11,135 @@ string rtrim(const string &);
  * The function accepts STRING_ARRAY words as parameter.
  */
 
+const int ALPHABET_SIZE = 10; // A to J inclusive
+
 struct node
 {
-    char data;
-    node *left, *right;
+    node **children;
+    bool isEndOfWord;
 
-    node(char ch) : data(ch)
+    node()
     {
-        left = nullptr;
-        right = nullptr;
+        isEndOfWord = false;
+        children = new node*[ALPHABET_SIZE];
+        for (int index = 0; index < ALPHABET_SIZE; index++)
+            children[index] = nullptr;
     }
 };
 
-node *createTree(string word)
+class tree
 {
-    node *head = new node(word.at(0));
-    node *temp = head;
-    for (int index = 1; index < word.length(); index++)
+private:
+    node *root;
+    void clean(node *);
+
+public:
+    tree()
     {
-        temp->left = new node(word.at(index));
-        temp = temp->left;
+        root = new node;
+    }
+    ~tree()
+    {
+        clean(root);
+    }
+    void insert(const string &);
+    bool isPrefixExist(const string &) const;
+};
+
+void tree::clean(node *root)
+{
+    for (int index = 0; index < ALPHABET_SIZE; index++)
+    {
+        if (root->children[index] != nullptr)
+            clean(root->children[index]);
     }
 
-    return head;
+    delete[] root->children;
 }
 
-bool traverseTree(node *root, string &word)
+bool tree::isPrefixExist(const string &word) const
 {
-    node *temp = root;
-    int index;
-    for (index = 1; index < word.size(); index++)
+    node *temp = this->root;
+
+    for (int i = 0; i < word.length() && temp != nullptr; i++)
     {
-        if (temp->left != nullptr && temp->left->data == word.at(index))
+        int index = word.at(i) - 'a';
+        if (temp->children[index] != nullptr && temp->children[index]->isEndOfWord)
         {
-            if (index == word.size() - 1)
-                return true;
-            else
-                temp = temp->left;
+            cout << "BAD SET" << endl
+                 << word << endl;
+            return true;
         }
-        else if (temp->right != nullptr && temp->right->data == word.at(index))
-        {
-            if (index == word.size() - 1)
-                return true;
-            else
-                temp = temp->right;
-        }
-        else
-        {
-            if (temp->left == nullptr)
-                temp->left = createTree(word.substr(index));
-            else
-                temp->right = createTree(word.substr(index));
-            break;
-        }
+
+        temp = temp->children[index];
     }
 
-    return false;
+    if (temp == nullptr)
+        return false;
+    else
+    {
+        cout << "BAD SET" << endl
+             << word << endl;
+        return true;
+    }
+}
+
+void tree::insert(const string &word)
+{
+    node *temp = root;
+
+    for (int i = 0; i < word.length(); i++)
+    {
+        int index = word.at(i) - 'a';
+
+        if (temp->children[index] == nullptr)
+        {
+            temp->children[index] = new node;
+            if (i == word.length() - 1)
+                temp->children[index]->isEndOfWord = true;
+        }
+        temp = temp->children[index];
+    }
 }
 
 void noPrefix(vector<string> words)
 {
-    vector<node *> trees;
-    trees.push_back(createTree(words[0]));
+    tree wordTree;
 
-    for (int index = 1; index < words.size(); index++)
+    for (string word : words)
     {
-        for (int index2 = 0; index2 < trees.size(); index2++)
-        {
-            if (trees[index2]->data == words[index].at(0))
-            {
-                if (traverseTree(trees[index2], words[index]))
-                {
-                    cout << "BAD SET" << endl
-                         << words[index];
-                    return;
-                }
-                break;
-            }
-            else
-            {
-                trees.push_back(createTree(words[index]));
-                break;
-            }
-        }
+        if (wordTree.isPrefixExist(word))
+            return;
+        else
+            wordTree.insert(word);
     }
-    cout << "GOOD SET";
 }
 
 int main()
 {
-    string n_temp;
-    getline(cin, n_temp);
+    string fileName = "input.txt";
+    ifstream inputFile(fileName.c_str());
 
-    int n = stoi(ltrim(rtrim(n_temp)));
+
+
+    string n_temp;
+    getline(inputFile, n_temp);
+
+    int n = stoi(n_temp);
 
     vector<string> words(n);
 
     for (int i = 0; i < n; i++)
     {
         string words_item;
-        getline(cin, words_item);
+        getline(inputFile, words_item);
 
         words[i] = words_item;
     }
 
     noPrefix(words);
 
+    inputFile.close();
+
     return 0;
-}
-
-string ltrim(const string &str)
-{
-    string s(str);
-
-    s.erase(
-        s.begin(),
-        find_if(s.begin(), s.end(), not1(ptr_fun<int, int>(isspace))));
-
-    return s;
-}
-
-string rtrim(const string &str)
-{
-    string s(str);
-
-    s.erase(
-        find_if(s.rbegin(), s.rend(), not1(ptr_fun<int, int>(isspace))).base(),
-        s.end());
-
-    return s;
 }
