@@ -113,6 +113,8 @@ void noPrefix(vector<string> words)
         else
             wordTree.insert(word);
     }
+
+    cout << "GOOD SET" << endl;
 }
 
 int main()
